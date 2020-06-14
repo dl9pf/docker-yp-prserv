@@ -10,11 +10,6 @@ RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
     update-locale LANG=en_US.UTF-8
 ENV LANG en_US.UTF-8 
 
-#RUN DEBIAN_FRONTEND=noninteractive dpkg-reconfigure locales \
-#            && locale-gen en_US.UTF-8 \
-#            && update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 ENV LANG en_US.utf8
-
-
 RUN DEBIAN_FRONTEND=noninteractive apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 RUN echo "dash dash/sh boolean false" | debconf-set-selections
@@ -24,18 +19,19 @@ RUN groupadd -g 1000 yocto \
     &&     usermod -a -G sudo yocto \
     &&     usermod -a -G users yocto
 
+RUN mkdir -p /home/yocto/prserv-volume && chown -R yocto:yocto /home/yocto/prserv-volume
+VOLUME /home/yocto/prserv-volume
+
 ENV HOME=/home/yocto
 USER yocto
+WORKDIR /home/yocto/
 
-RUN git clone --verbose --progress --depth 1 -4 --branch dunfell git://git.yoctoproject.org/poky /home/yocto/poky
-RUN mkdir -p /home/yocto/build /home/yocto/prserv
-WORKDIR /home/yocto/poky
-EXPOSE 8585
+RUN git clone --verbose --progress --depth 1 -4 --branch dunfell git://git.yoctoproject.org/poky /home/yocto/poky/
+RUN ls -alh /home/yocto/poky
+RUN sed -i -e "s#EXCLUSIVE#IMMEDIATE#g" /home/yocto/poky/bitbake/lib/prserv/db.py
 COPY start.sh /home/yocto/start.sh
-#RUN chmod 755 /home/yocto/start.sh \
-# && chown yocto.yocto /home/yocto/start.sh
 
-VOLUME /home/yocto/prserv
-VOLUME /home/yocto/build
+EXPOSE 8585
+EXPOSE 8686
 
 CMD ["/home/yocto/start.sh"]
