@@ -19,19 +19,21 @@ RUN groupadd -g 1000 yocto \
     &&     usermod -a -G sudo yocto \
     &&     usermod -a -G users yocto
 
-RUN mkdir -p /home/yocto/prserv-volume && chown -R yocto:yocto /home/yocto/prserv-volume
-VOLUME /home/yocto/prserv-volume
+RUN mkdir -p /home/yocto/pr_hash_serv-volume && chown -R yocto:yocto /home/yocto/pr_hash_serv-volume
+VOLUME /home/yocto/pr_hash_serv-volume
 
 ENV HOME=/home/yocto
 USER yocto
 WORKDIR /home/yocto/
 
-RUN git clone --verbose --progress --depth 1 -4 --branch dunfell git://git.yoctoproject.org/poky /home/yocto/poky/
+RUN git clone --verbose --progress --depth 1 -4 --branch kirkstone git://git.yoctoproject.org/poky /home/yocto/poky/
 RUN ls -alh /home/yocto/poky
 RUN sed -i -e "s#EXCLUSIVE#IMMEDIATE#g" /home/yocto/poky/bitbake/lib/prserv/db.py
 COPY start.sh /home/yocto/start.sh
 
-EXPOSE 8585
-EXPOSE 8686
+EXPOSE 8181
+EXPOSE 8282
+EXPOSE 8383
+EXPOSE 8484
 
 CMD ["/home/yocto/start.sh"]
