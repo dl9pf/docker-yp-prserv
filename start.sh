@@ -20,7 +20,7 @@ sleep 1
 exit_script(){
 echo 'cleanup prserv'
 cd /home/yocto/poky
-source ./oe-init-build-env /home/yocto/prserv-volume
+source ./oe-init-build-env /home/yocto/pr_hash_serv-volume
 bitbake-prserv --stop || true
 killall bitbake-hashserv || true
 sleep 1
@@ -30,4 +30,4 @@ kill -- -$$
 
 trap exit_script SIGINT SIGTERM
 
-tail -f /home/yocto/prserv-volume/*.log
+tail -f /home/yocto/pr_hash_serv-volume/*.log

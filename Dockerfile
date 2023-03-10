@@ -20,6 +20,7 @@ RUN groupadd -g 1000 yocto \
     &&     usermod -a -G users yocto
 
 RUN mkdir -p /home/yocto/pr_hash_serv-volume && chown -R yocto:yocto /home/yocto/pr_hash_serv-volume
+RUN chmod -R a+rw /home/yocto/pr_hash_serv-volume
 VOLUME /home/yocto/pr_hash_serv-volume
 
 ENV HOME=/home/yocto
