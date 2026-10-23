@@ -1,24 +1,14 @@
-#FROM debian:stable
-FROM ubuntu:24.04
+FROM debian:trixie-slim
 
-#RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf
-RUN DEBIAN_FRONTEND=noninteractive apt-get update
-RUN DEBIAN_FRONTEND=noninteractive apt-get -u dist-upgrade -y
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y gawk wget git-core diffstat unzip texinfo gcc-multilib      build-essential chrpath socat cpio python3 python3-pip python3-pexpect      xz-utils debianutils iputils-ping python3-git python3-jinja2 libsdl1.2-dev xterm git mc locales apt-utils sudo
+RUN DEBIAN_FRONTEND=noninteractive apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+       ca-certificates git python3 psmisc locales \
+    && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
+    && locale-gen \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+ENV LANG=en_US.UTF-8
 
-RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
-    dpkg-reconfigure --frontend=noninteractive locales && \
-    update-locale LANG=en_US.UTF-8
-ENV LANG en_US.UTF-8 
-
-RUN DEBIAN_FRONTEND=noninteractive apt-get clean \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-RUN echo "dash dash/sh boolean false" | debconf-set-selections
-RUN DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
-RUN groupadd -g 2000 yocto \
-    &&     useradd -u 2000 -g 2000 -ms /bin/bash yocto \
-    &&     usermod -a -G sudo yocto \
-    &&     usermod -a -G users yocto
+RUN groupadd -g 2000 yocto && useradd -u 2000 -g 2000 -ms /bin/bash yocto
 
 RUN mkdir -p /home/yocto/pr_hash_serv-volume-scarthgap && chown -R yocto:yocto /home/yocto/pr_hash_serv-volume-scarthgap
 RUN chmod -R a+rw /home/yocto/pr_hash_serv-volume-scarthgap
@@ -28,7 +18,7 @@ ENV HOME=/home/yocto
 USER yocto
 WORKDIR /home/yocto/
 
-RUN git clone --verbose --progress --depth 1 -4 --branch scarthgap git://git.yoctoproject.org/poky /home/yocto/poky/
+RUN git clone --depth 1 --branch scarthgap https://git.yoctoproject.org/poky /home/yocto/poky/
 RUN ls -alh /home/yocto/poky
 RUN sed -i -e "s#EXCLUSIVE#IMMEDIATE#g" /home/yocto/poky/bitbake/lib/prserv/db.py
 COPY start.sh /home/yocto/start.sh
