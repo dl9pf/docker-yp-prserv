@@ -11,6 +11,9 @@ One branch per Yocto release, each with its own ports and its own volume:
 
 `./build-and-run.sh` builds the image and starts it with the named volume of the branch.
 
+`master` follows `wrynose`. A setup that was built from the old `master` is a scarthgap setup: rebuild it from the
+`scarthgap` branch (same ports, same path); `./build-and-run.sh` then migrates its data.
+
 ## Existing setups keep working
 The path inside the container is the same as before, so a `docker run -v /some/host/dir:<path>` of an existing setup
 still works unchanged. Uid/gid 2000 (`yocto`) are unchanged too, so existing data stays readable.
