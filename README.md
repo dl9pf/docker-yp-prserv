@@ -10,6 +10,8 @@ One branch per Yocto release, each with its own ports and its own volume:
 | `wrynose` (= `master`) | bitbake 2.18 | 9191 / 9292 | 9393 / 9494 | `prhashserv-wrynose` | `/home/yocto/pr_hash_serv-volume-wrynose` |
 
 `./build-and-run.sh` builds the image and starts it with the named volume of the branch.
+Running it again redeploys: after the build the container of the previous run is stopped and removed, the data
+stays in the volume.
 
 `master` follows `wrynose`. A setup that was built from the old `master` is a scarthgap setup: rebuild it from the
 `scarthgap` branch (same ports, same path); `./build-and-run.sh` then migrates its data.
