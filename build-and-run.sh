@@ -23,6 +23,14 @@ find_old() {
   done
 }
 
+# Containers of an earlier run of this script: they use $DATA (named volume or host directory) at $path.
+find_current() {
+  local id
+  for id in $(docker ps -a -q --filter "volume=$path"); do
+    if [ "$(docker inspect -f "{{range .Mounts}}{{if eq .Destination \"$path\"}}{{if .Name}}{{.Name}}{{else}}{{.Source}}{{end}}{{end}}{{end}}" "$id")" = "$DATA" ]; then echo "$id"; fi
+  done
+}
+
 # Migrate only into a named volume that does not exist yet; a host directory (DATA_VOLUME=/...) is used as it is.
 old=
 if [[ "$DATA" != /* ]] && ! docker volume inspect "$DATA" >/dev/null 2>&1; then
@@ -43,6 +51,12 @@ if [ -n "$old" ]; then
   [ "$(docker inspect -f '{{.State.Status}}' "$old")" != running ] || docker stop -t 30 "$old"
   "$here/migrate-volume.sh" "$BRANCH" "$old"
 fi
+
+# Replace the container of an earlier run: it holds the ports. The data stays in $DATA.
+for id in $(find_current); do
+  [ "$(docker inspect -f '{{.State.Status}}' "$id")" != running ] || docker stop -t 30 "$id"
+  docker rm "$id"
+done
 
 args=()
 for p in $PORTS; do args+=(-p "$p:$p"); done
