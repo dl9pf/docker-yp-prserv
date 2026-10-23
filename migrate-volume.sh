@@ -19,4 +19,4 @@ if docker volume inspect "$vol" >/dev/null 2>&1 \
   exit 1
 fi
 docker run --rm --network none --volumes-from "$old" -v "$vol:/new" debian:trixie-slim cp -a "$path/." /new/
-echo "copied $path of $old to volume $vol; start the new container with ./build-and-run.sh"
+echo "copied $path of $old to volume $vol"
