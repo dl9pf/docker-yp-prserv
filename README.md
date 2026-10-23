@@ -35,6 +35,12 @@ volume does not exist yet, does this:
 refuses to run while the old container is up (the sqlite files would be inconsistent; `FORCE=1` overrides) and refuses
 to write into a volume that is not empty. Delete the old container and its volume yourself once the new one works.
 
+## Who may reach which port
+The read-write hashserv (9393 on wrynose) lets anonymous clients delete entries and run garbage collection, and the
+read-write prserv hands out revisions. Publish the read-write ports on a private address and the read-only ports on
+the build network: `RW_BIND=10.0.0.5 RO_BIND=0.0.0.0 ./build-and-run.sh` (wrynose and master; default: all interfaces).
+Docker publishes ports around ufw and firewalld, so use `RW_BIND` or the `DOCKER-USER` chain, not only a firewall rule.
+
 To keep using your own directory or volume, run `DATA_VOLUME=/srv/prserv ./build-and-run.sh`; no migration is done then.
 
 Client side (local.conf): `PRSERV_HOST = "host:<prserv rw port>"`, `BB_HASHSERVE = "host:<hashserv rw port>"`.

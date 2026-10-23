@@ -3,12 +3,16 @@
 # If an older container of this setup (anonymous volume) is found, its data is copied into the named volume first.
 #   ASSUME_YES=1 ./build-and-run.sh     do not ask before stopping the old container
 #   DATA_VOLUME=/srv/prserv ./build-and-run.sh    use your own volume name or host directory instead
+#   RW_BIND=10.0.0.5 RO_BIND=0.0.0.0 ./build-and-run.sh   publish the read-write ports (9191, 9393) only on this address
+#                                  and the read-only ports (9292, 9494) on that one; default: all interfaces. The
+#                                  read-write hashserv lets anonymous clients delete entries (@db-admin), keep it private.
 
 set -e
 set -x
 
 BRANCH=wrynose
-PORTS="9191 9292 9393 9494"
+PORTS_RW="9191 9393"   # prserv rw, hashserv rw
+PORTS_RO="9292 9494"   # prserv ro, hashserv ro
 DATA="${DATA_VOLUME:-prhashserv-$BRANCH}"
 path="/home/yocto/pr_hash_serv-volume-$BRANCH"
 here="$(cd "$(dirname "$0")" && pwd)"
@@ -59,5 +63,6 @@ for id in $(find_current); do
 done
 
 args=()
-for p in $PORTS; do args+=(-p "$p:$p"); done
+for p in $PORTS_RW; do args+=(-p "${RW_BIND:+$RW_BIND:}$p:$p"); done
+for p in $PORTS_RO; do args+=(-p "${RO_BIND:+$RO_BIND:}$p:$p"); done
 docker run "${args[@]}" -v "$DATA:$path" -d prhashserv:production-"$BRANCH"-"$DATETAG"
